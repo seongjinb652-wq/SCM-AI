@@ -1,0 +1,96 @@
+# data_generator.py
+"""
+가상 데이터 생성 모듈 (데모/테스트용)
+
+Note:
+    - 실제 고객 데이터 보호
+    - 다른 회사 데모 시 사용
+    - 알고리즘 검증용
+"""
+
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+
+def generate_synthetic_scm_data(
+    num_items=20,
+    num_days=730,
+    demand_pattern="seasonal",
+    spike_probability=0.15,
+    seed=42
+):
+    """
+    가상 SCM 데이터 생성
+    
+    Args:
+        num_items: 품목 수
+        num_days: 기간 (일)
+        demand_pattern: 수요 패턴
+            - "random": 무작위
+            - "seasonal": 계절성
+            - "trend": 추세
+        spike_probability: 스파이크 발생 확률 (0~1)
+        seed: 난수 시드 (재현성)
+    
+    Returns:
+        DataFrame: [Item, Day, Inflow, Outflow] 구조
+    """
+    np.random.seed(seed)
+    
+    # 날짜 범위
+    start_date = datetime(2024, 1, 1)
+    dates = [start_date + timedelta(days=i) for i in range(num_days)]
+    
+    data = []
+    
+    for item_id in range(1, num_items + 1):
+        # 품목별 기본 수요 수준
+        base_demand = np.random.randint(100, 1000)
+        
+        for day_idx, day in enumerate(dates):
+            # 수요 패턴 생성
+            if demand_pattern == "seasonal":
+                # 계절성 (연간 주기)
+                seasonal = base_demand * (1 + 0.3 * np.sin(2 * np.pi * day_idx / 365))
+            elif demand_pattern == "trend":
+                # 추세 (점진적 증가)
+                seasonal = base_demand * (1 + 0.001 * day_idx)
+            else:
+                # 무작위
+                seasonal = base_demand
+            
+            # 일간 변동
+            daily_variation = np.random.normal(1.0, 0.2)
+            outflow = max(0, seasonal * daily_variation)
+            
+            # 스파이크 (상위 15% 급증)
+            if np.random.random() < spike_probability:
+                outflow *= np.random.uniform(2.0, 4.0)
+            
+            # 입고 (출고 + 약간의 버퍼)
+            inflow = outflow * np.random.uniform(0.9, 1.2) if np.random.random() < 0.3 else 0
+            
+            data.append({
+                "Item": f"ITEM_{item_id:03d}",
+                "Day": day,
+                "Inflow": round(inflow, 1),
+                "Outflow": round(outflow, 1)
+            })
+    
+    return pd.DataFrame(data)
+
+
+def save_synthetic_data(output_path="data/synthetic/scm_synthetic.csv"):
+    """
+    가상 데이터 생성 및 저장
+    """
+    from config import SYNTHETIC_DATA_CONFIG
+    
+    df = generate_synthetic_scm_data(**SYNTHETIC_DATA_CONFIG)
+    df.to_csv(output_path, index=False, encoding='utf-8-sig')
+    print(f"✅ 가상 데이터 생성 완료: {output_path}")
+    print(f"   - 품목 수: {df['Item'].nunique()}")
+    print(f"   - 기간: {df['Day'].min()} ~ {df['Day'].max()}")
+    print(f"   - 총 레코드: {len(df):,}개")
+    
+    return df
