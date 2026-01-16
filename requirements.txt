@@ -1,0 +1,36 @@
+---
+
+## 📌 requirements.txt 초안
+
+```txt
+# 기본 데이터 처리
+pandas==2.2.0
+numpy==1.26.0
+
+# 시계열 예측
+statsmodels==0.14.0
+prophet==1.1.5
+
+# 머신러닝/딥러닝
+scikit-learn==1.4.0
+tensorflow==2.15.0
+keras==2.15.0
+
+# 최적화
+scipy==1.12.0
+pyomo==6.7.0
+
+# 강화학습
+gym==0.26.2
+stable-baselines3==2.1.0
+
+# 시각화/대시보드
+matplotlib==3.8.0
+plotly==5.18.0
+dash==2.14.0
+
+# 배포 환경
+flask==3.0.0
+fastapi==0.109.0
+uvicorn==0.27.0
+docker==7.0.0
